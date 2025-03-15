@@ -1,0 +1,25 @@
+name: TruffleHog Secret Scan
+
+on:
+  push:
+    branches:
+      - main  # Change this to match your default branch
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Fetch last two commits for comparison
+
+      - name: Get previous commit
+        id: previous_commit
+        run: echo "PREV_COMMIT=$(git rev-parse HEAD~1)" >> $GITHUB_ENV
+
+      - name: Run TruffleHog
+        run: |
+          docker run --rm -v $(pwd):/repo ghcr.io/trufflesecurity/trufflehog \
+          git file:///repo --since-commit ${{ env.PREV_COMMIT }}
