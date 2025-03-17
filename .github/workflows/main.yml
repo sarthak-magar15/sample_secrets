@@ -21,4 +21,4 @@ jobs:
 
       - name: Run TruffleHog
         run: |
-          docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD
+          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD
