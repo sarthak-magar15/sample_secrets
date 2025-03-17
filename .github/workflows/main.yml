@@ -12,7 +12,13 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Fetch last two commits for comparison
 
-      - name: Run TruffleHog
+      - name: Get previous commit
+        id: previous_commit
+        run: echo "PREV_COMMIT=$(git rev-parse HEAD~1)" >> $GITHUB_ENV
+
+      - name: Run TruffleHog (Git mode, scan latest commit)
         run: |
-          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD
+          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit ${{ env.PREV_COMMIT }}
