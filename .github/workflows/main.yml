@@ -13,12 +13,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2  # Fetch last two commits for comparison
+          fetch-depth: 0  # Fetch full commit history
 
-      - name: Get previous commit
-        id: previous_commit
-        run: echo "PREV_COMMIT=$(git rev-parse HEAD~1)" >> $GITHUB_ENV
-
-      - name: Run TruffleHog (Git mode, scan latest commit)
+      - name: Set previous commit variable
         run: |
-          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit ${{ env.PREV_COMMIT }}
+          PREV_COMMIT=$(git rev-parse origin/main~1)
+          echo "PREV_COMMIT=${PREV_COMMIT}" >> $GITHUB_ENV
+          echo "Previous commit hash: ${PREV_COMMIT}"
+        shell: bash
+
+      - name: Run TruffleHog scan (Git mode)
+        run: |
+          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit $PREV_COMMIT
