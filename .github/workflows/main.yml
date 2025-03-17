@@ -21,5 +21,4 @@ jobs:
 
       - name: Run TruffleHog
         run: |
-          apt install trufflehog |
-          trufflehog git file://. --since-commit HEAD 
+          docker run --rm -it -v "$PWD:/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD
