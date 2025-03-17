@@ -13,15 +13,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Fetch full commit history
+          fetch-depth: 2  # Fetch the last two commits
 
-      - name: Set previous commit variable
+      - name: Get list of changed files
+        id: changed_files
         run: |
-          PREV_COMMIT=$(git rev-parse origin/main~1)
-          echo "PREV_COMMIT=${PREV_COMMIT}" >> $GITHUB_ENV
-          echo "Previous commit hash: ${PREV_COMMIT}"
-        shell: bash
+          git diff --name-only HEAD~1 HEAD > changed_files.txt
+          cat changed_files.txt  # Print the list of changed files for debugging
 
-      - name: Run TruffleHog scan (Git mode)
+      - name: Run TruffleHog on changed files
         run: |
-          docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit $PREV_COMMIT
+          while IFS= read -r file; do
+            # Run TruffleHog on each changed file
+            docker run --rm -v "$(pwd):/pwd" trufflesecurity/trufflehog:latest git file:///pwd --since-commit HEAD --include $file
+          done < changed_files.txt
